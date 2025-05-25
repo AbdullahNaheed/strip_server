@@ -1,6 +1,7 @@
 {
   "name": "strip-server",
   "version": "1.0.0",
+  "description": "A simple server to strip HTML tags from text",
   "type": "module",
   "dependencies": {
     "stripe": "^18.1.1",

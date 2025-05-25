@@ -1,33 +1,23 @@
-require ('dotenv').config();
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import { json } from 'micro';
+import Stripe from 'stripe';
 
-app.use(cors());
-app.use(express.json());
-
-app.post('/api/create-checkout-session', async (req, res) => {
-    const { amount, currency } = req.body;
-
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+export default async function handler(req, res) {
+    if (req.method != 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    const { amount, currency, description } = await json(req);
     try {
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency
         });
-
-        res.send({
-            clientSecret: paymentIntent.client_secret,
-        });
+        res.status(200).json({clientSecret: paymentIntent.client_secret});
 
     } catch (error) {
         console.error('Error creating payment intent:', error);
-        res.status(500).send({
-            error: 'Failed to create payment intent',
-        });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-});
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+}
+
